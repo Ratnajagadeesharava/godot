@@ -34,10 +34,10 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/importer_mesh.h"
@@ -311,7 +311,10 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 			Ref<ImporterMesh> editor_mesh = src_mesh_node->get_mesh();
 			mesh_node->set_mesh(editor_mesh->get_mesh());
 		}
-
+		// Replace the original mesh node in the scene tree with the new one.
+		if (unlikely(p_node == scene)) {
+			scene = mesh_node;
+		}
 		p_node->replace_by(mesh_node);
 		memdelete(p_node);
 		p_node = mesh_node;

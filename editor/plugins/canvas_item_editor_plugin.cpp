@@ -35,7 +35,6 @@
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -45,6 +44,8 @@
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
+#include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/2d/sprite_2d.h"
@@ -1408,7 +1409,7 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 		}
 
 		// Cancel a drag
-		if (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed()) {
+		if (ED_IS_SHORTCUT("canvas_item_editor/cancel_transform", p_event) || (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed())) {
 			_restore_canvas_item_state(drag_selection);
 			_reset_drag();
 			viewport->queue_redraw();
@@ -1491,7 +1492,7 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 		}
 
 		// Cancel a drag
-		if (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed()) {
+		if (ED_IS_SHORTCUT("canvas_item_editor/cancel_transform", p_event) || (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed())) {
 			_restore_canvas_item_state(drag_selection);
 			_reset_drag();
 			viewport->queue_redraw();
@@ -1653,7 +1654,7 @@ bool CanvasItemEditor::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 		}
 
 		// Cancel a drag
-		if (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed()) {
+		if (ED_IS_SHORTCUT("canvas_item_editor/cancel_transform", p_event) || (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed())) {
 			_restore_canvas_item_state(drag_selection);
 			_reset_drag();
 			viewport->queue_redraw();
@@ -1854,7 +1855,7 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 		}
 
 		// Cancel a drag
-		if (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed()) {
+		if (ED_IS_SHORTCUT("canvas_item_editor/cancel_transform", p_event) || (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed())) {
 			_restore_canvas_item_state(drag_selection);
 			snap_target[0] = SNAP_TARGET_NONE;
 			snap_target[1] = SNAP_TARGET_NONE;
@@ -1993,7 +1994,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 		}
 
 		// Cancel a drag
-		if (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed()) {
+		if (ED_IS_SHORTCUT("canvas_item_editor/cancel_transform", p_event) || (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed())) {
 			_restore_canvas_item_state(drag_selection);
 			_reset_drag();
 			viewport->queue_redraw();
@@ -2131,7 +2132,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 		}
 
 		// Cancel a drag
-		if (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed()) {
+		if (ED_IS_SHORTCUT("canvas_item_editor/cancel_transform", p_event) || (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed())) {
 			_restore_canvas_item_state(drag_selection, true);
 			snap_target[0] = SNAP_TARGET_NONE;
 			snap_target[1] = SNAP_TARGET_NONE;
@@ -3898,7 +3899,7 @@ void CanvasItemEditor::_update_editor_settings() {
 	// to distinguish from the other key icons at the top. On a light theme,
 	// the icon will be dark, so we need to lighten it before blending it
 	// with the red color.
-	const Color key_auto_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25);
+	const Color key_auto_color = EditorThemeManager::is_dark_theme() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25);
 	key_auto_insert_button->add_theme_color_override("icon_pressed_color", key_auto_color.lerp(Color(1, 0, 0), 0.55));
 	animation_menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
@@ -3932,7 +3933,7 @@ void CanvasItemEditor::_notification(int p_what) {
 				} else {
 					rect = Rect2();
 				}
-				Transform2D xform = ci->get_transform();
+				Transform2D xform = ci->get_global_transform();
 
 				if (rect != se->prev_rect || xform != se->prev_xform) {
 					viewport->queue_redraw();
@@ -5131,6 +5132,8 @@ CanvasItemEditor::CanvasItemEditor() {
 	controls_vb = memnew(VBoxContainer);
 	controls_vb->set_begin(Point2(5, 5));
 
+	ED_SHORTCUT("canvas_item_editor/cancel_transform", TTR("Cancel Transformation"), Key::ESCAPE);
+
 	// To ensure that scripts can parse the list of shortcuts correctly, we have to define
 	// those shortcuts one by one. Define shortcut before using it (by EditorZoomWidget).
 	ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_3.125_percent", TTR("Zoom to 3.125%"),
@@ -5658,7 +5661,7 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
 		if (texture != nullptr || scene != nullptr) {
 			bool root_node_selected = EditorNode::get_singleton()->get_editor_selection()->is_selected(EditorNode::get_singleton()->get_edited_scene());
-			String desc = TTR("Drag and drop to add as child of current scene's root node.") + "\n" + vformat(TTR("Hold %s when dropping to add as child of selected node."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL));
+			String desc = TTR("Drag and drop to add as child of selected node.") + "\n" + TTR("Hold Alt when dropping to add as child of root node.");
 			if (!root_node_selected) {
 				desc += "\n" + TTR("Hold Shift when dropping to add as sibling of selected node.");
 			}
@@ -5669,7 +5672,7 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 				preview_node->add_child(sprite);
 				label->show();
 				label_desc->show();
-				desc += "\n" + TTR("Hold Alt when dropping to add as a different node type.");
+				desc += "\n" + TTR("Hold Alt + Shift when dropping to add as a different node type.");
 				label_desc->set_text(desc);
 			} else {
 				if (scene.is_valid()) {
@@ -5962,7 +5965,6 @@ bool CanvasItemEditorViewport::_only_packed_scenes_selected() const {
 
 void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p_data) {
 	bool is_shift = Input::get_singleton()->is_key_pressed(Key::SHIFT);
-	bool is_ctrl = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 	bool is_alt = Input::get_singleton()->is_key_pressed(Key::ALT);
 
 	selected_files.clear();
@@ -5978,9 +5980,9 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 	Node *root_node = EditorNode::get_singleton()->get_edited_scene();
 	if (selected_nodes.size() > 0) {
 		Node *selected_node = selected_nodes[0];
-		target_node = root_node;
-		if (is_ctrl) {
-			target_node = selected_node;
+		target_node = selected_node;
+		if (is_alt) {
+			target_node = root_node;
 		} else if (is_shift && selected_node != root_node) {
 			target_node = selected_node->get_parent();
 		}
@@ -5994,7 +5996,7 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 
 	drop_pos = p_point;
 
-	if (is_alt && !_only_packed_scenes_selected()) {
+	if (is_alt && is_shift && !_only_packed_scenes_selected()) {
 		_show_resource_type_selector();
 	} else {
 		_perform_drop_data();
@@ -6026,6 +6028,10 @@ void CanvasItemEditorViewport::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("mouse_exited", callable_mp(this, &CanvasItemEditorViewport::_on_mouse_exit));
+		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			_remove_preview();
 		} break;
 	}
 }
