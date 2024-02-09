@@ -87,6 +87,8 @@ void EditorSceneTabs::_scene_tab_hovered(int p_tab) {
 	if (!bool(EDITOR_GET("interface/scene_tabs/show_thumbnail_on_hover"))) {
 		return;
 	}
+
+	//current_tab is the tab relates to the scene tabs
 	int current_tab = scene_tabs->get_current_tab();
 
 	if (p_tab == current_tab || p_tab < 0) {

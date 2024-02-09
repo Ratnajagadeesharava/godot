@@ -289,6 +289,8 @@ void EditorNode::_version_control_menu_option(int p_idx) {
 	}
 }
 
+
+// this method is called to update the title that is present on the window titlebar
 void EditorNode::_update_title() {
 	const String appname = GLOBAL_GET("application/config/name");
 	String title = (appname.is_empty() ? TTR("Unnamed Project") : appname);
