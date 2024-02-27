@@ -32,8 +32,8 @@
 
 #include "collision_shape_3d.h"
 #include "physics_body_3d.h"
-#include "scene/resources/concave_polygon_shape_3d.h"
-#include "scene/resources/convex_polygon_shape_3d.h"
+#include "scene/resources/3d/concave_polygon_shape_3d.h"
+#include "scene/resources/3d/convex_polygon_shape_3d.h"
 
 bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 	//this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.
@@ -491,6 +491,23 @@ void MeshInstance3D::create_debug_tangents() {
 	} else {
 		mi->set_owner(get_owner());
 	}
+}
+
+bool MeshInstance3D::_property_can_revert(const StringName &p_name) const {
+	HashMap<StringName, int>::ConstIterator E = blend_shape_properties.find(p_name);
+	if (E) {
+		return true;
+	}
+	return false;
+}
+
+bool MeshInstance3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	HashMap<StringName, int>::ConstIterator E = blend_shape_properties.find(p_name);
+	if (E) {
+		r_property = 0.0f;
+		return true;
+	}
+	return false;
 }
 
 void MeshInstance3D::_bind_methods() {

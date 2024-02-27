@@ -203,8 +203,8 @@ bool CPUParticles3D::get_fractional_delta() const {
 	return fractional_delta;
 }
 
-Array CPUParticles3D::get_configuration_warnings() const {
-	Array warnings = GeometryInstance3D::get_configuration_warnings();
+PackedStringArray CPUParticles3D::get_configuration_warnings() const {
+	PackedStringArray warnings = GeometryInstance3D::get_configuration_warnings();
 
 	bool mesh_found = false;
 	bool anim_material_found = false;
@@ -1684,7 +1684,6 @@ CPUParticles3D::CPUParticles3D() {
 
 	set_emitting(true);
 	set_amount(8);
-	set_visibility_aabb(AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8)));
 
 	set_param_min(PARAM_INITIAL_LINEAR_VELOCITY, 0);
 	set_param_min(PARAM_ANGULAR_VELOCITY, 0);

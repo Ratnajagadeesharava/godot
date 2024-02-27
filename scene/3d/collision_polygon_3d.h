@@ -32,7 +32,7 @@
 #define COLLISION_POLYGON_3D_H
 
 #include "scene/3d/node_3d.h"
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
 class CollisionObject3D;
 class CollisionPolygon3D : public Node3D {
@@ -74,7 +74,7 @@ public:
 	real_t get_margin() const;
 	void set_margin(real_t p_margin);
 
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	CollisionPolygon3D();
 };

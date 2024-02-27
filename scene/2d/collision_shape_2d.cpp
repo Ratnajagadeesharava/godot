@@ -32,8 +32,8 @@
 
 #include "collision_object_2d.h"
 #include "scene/2d/area_2d.h"
-#include "scene/resources/concave_polygon_shape_2d.h"
-#include "scene/resources/convex_polygon_shape_2d.h"
+#include "scene/resources/2d/concave_polygon_shape_2d.h"
+#include "scene/resources/2d/convex_polygon_shape_2d.h"
 
 void CollisionShape2D::_shape_changed() {
 	queue_redraw();
@@ -173,8 +173,8 @@ bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double 
 	return shape->_edit_is_selected_on_click(p_point, p_tolerance);
 }
 
-Array CollisionShape2D::get_configuration_warnings() const {
-	Array warnings = Node::get_configuration_warnings();
+PackedStringArray CollisionShape2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	CollisionObject2D *col_object = Object::cast_to<CollisionObject2D>(get_parent());
 	if (col_object == nullptr) {

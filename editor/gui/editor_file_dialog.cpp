@@ -86,6 +86,7 @@ void EditorFileDialog::_update_theme_item_cache() {
 	theme_cache.mode_list = get_editor_theme_icon(SNAME("FileList"));
 	theme_cache.favorites_up = get_editor_theme_icon(SNAME("MoveUp"));
 	theme_cache.favorites_down = get_editor_theme_icon(SNAME("MoveDown"));
+	theme_cache.create_folder = get_editor_theme_icon(SNAME("FolderCreate"));
 
 	theme_cache.folder = get_editor_theme_icon(SNAME("Folder"));
 	theme_cache.folder_icon_color = get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog"));
@@ -135,6 +136,9 @@ void EditorFileDialog::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("filesystem/file_dialog")) {
+				break;
+			}
 			bool is_showing_hidden = EDITOR_GET("filesystem/file_dialog/show_hidden_files");
 			if (show_hidden_files != is_showing_hidden) {
 				set_show_hidden_files(is_showing_hidden);
@@ -284,7 +288,7 @@ void EditorFileDialog::update_dir() {
 	}
 }
 
-void EditorFileDialog::_dir_submitted(String p_dir) {
+void EditorFileDialog::_dir_submitted(const String &p_dir) {
 	dir_access->change_dir(p_dir);
 	invalidate();
 	update_dir();
@@ -1325,6 +1329,7 @@ void EditorFileDialog::_update_icons() {
 	refresh->set_icon(theme_cache.reload);
 	favorite->set_icon(theme_cache.favorite);
 	show_hidden->set_icon(theme_cache.toggle_hidden);
+	makedir->set_icon(theme_cache.create_folder);
 
 	fav_up->set_icon(theme_cache.favorites_up);
 	fav_down->set_icon(theme_cache.favorites_down);
@@ -1872,8 +1877,11 @@ EditorFileDialog::EditorFileDialog() {
 	drives->connect("item_selected", callable_mp(this, &EditorFileDialog::_select_drive));
 	pathhb->add_child(drives);
 
+	pathhb->add_child(memnew(VSeparator));
+
 	makedir = memnew(Button);
-	makedir->set_text(TTR("Create Folder"));
+	makedir->set_theme_type_variation("FlatButton");
+	makedir->set_tooltip_text(TTR("Create a new folder."));
 	makedir->connect("pressed", callable_mp(this, &EditorFileDialog::_make_dir));
 	pathhb->add_child(makedir);
 
@@ -1910,7 +1918,7 @@ EditorFileDialog::EditorFileDialog() {
 	fav_down->connect("pressed", callable_mp(this, &EditorFileDialog::_favorite_move_down));
 
 	favorites = memnew(ItemList);
-	favorites->set_auto_translate(false);
+	favorites->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	fav_vb->add_child(favorites);
 	favorites->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	favorites->connect("item_selected", callable_mp(this, &EditorFileDialog::_favorite_selected));
@@ -1920,7 +1928,7 @@ EditorFileDialog::EditorFileDialog() {
 	rec_vb->set_custom_minimum_size(Size2(150, 100) * EDSCALE);
 	rec_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	recent = memnew(ItemList);
-	recent->set_auto_translate(false);
+	recent->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	recent->set_allow_reselect(true);
 	rec_vb->add_margin_child(TTR("Recent:"), recent, true);
 	recent->connect("item_selected", callable_mp(this, &EditorFileDialog::_recent_selected));
@@ -1944,7 +1952,7 @@ EditorFileDialog::EditorFileDialog() {
 	// Item (files and folders) list with context menu.
 
 	item_list = memnew(ItemList);
-	item_list->set_auto_translate(false);
+	item_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	item_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	item_list->connect("item_clicked", callable_mp(this, &EditorFileDialog::_item_list_item_rmb_clicked));
 	item_list->connect("empty_clicked", callable_mp(this, &EditorFileDialog::_item_list_empty_clicked));

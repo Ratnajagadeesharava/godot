@@ -76,6 +76,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		String name;
 		String description;
 		int api_level = 0;
+		String architecture;
 	};
 
 	struct APKExportData {
@@ -98,8 +99,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 #ifndef ANDROID_ENABLED
 	Thread check_for_changes_thread;
 	SafeFlag quit_request;
+	SafeFlag has_runnable_preset;
 
 	static void _check_for_changes_poll_thread(void *ud);
+	void _update_preset_status();
 #endif
 
 	String get_project_name(const String &p_name) const;
@@ -187,10 +190,12 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static bool _uses_vulkan();
 
+protected:
+	void _notification(int p_what);
+
 public:
 	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 
-public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 
 	virtual void get_export_options(List<ExportOption> *r_options) const override;
@@ -216,6 +221,8 @@ public:
 	virtual String get_option_label(int p_index) const override;
 
 	virtual String get_option_tooltip(int p_index) const override;
+
+	virtual String get_device_architecture(int p_index) const override;
 
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) override;
 

@@ -32,9 +32,9 @@
 
 #include "mesh_instance_3d.h"
 #include "physics_body_3d.h"
-#include "scene/resources/concave_polygon_shape_3d.h"
-#include "scene/resources/convex_polygon_shape_3d.h"
-#include "scene/resources/world_boundary_shape_3d.h"
+#include "scene/resources/3d/concave_polygon_shape_3d.h"
+#include "scene/resources/3d/convex_polygon_shape_3d.h"
+#include "scene/resources/3d/world_boundary_shape_3d.h"
 #include "vehicle_body_3d.h"
 
 void CollisionShape3D::make_convex_from_siblings() {
@@ -118,8 +118,8 @@ void CollisionShape3D::resource_changed(Ref<Resource> res) {
 }
 #endif
 
-Array CollisionShape3D::get_configuration_warnings() const {
-	Array warnings = Node::get_configuration_warnings();
+PackedStringArray CollisionShape3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	CollisionObject3D *col_object = Object::cast_to<CollisionObject3D>(get_parent());
 	if (col_object == nullptr) {

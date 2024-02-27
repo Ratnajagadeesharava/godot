@@ -32,7 +32,7 @@
 #define COLLISION_SHAPE_3D_H
 
 #include "scene/3d/node_3d.h"
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
 class CollisionObject3D;
 class CollisionShape3D : public Node3D {
@@ -64,7 +64,7 @@ public:
 	void set_disabled(bool p_disabled);
 	bool is_disabled() const;
 
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	CollisionShape3D();
 	~CollisionShape3D();

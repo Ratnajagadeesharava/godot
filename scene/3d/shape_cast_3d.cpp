@@ -32,7 +32,7 @@
 
 #include "scene/3d/collision_object_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/resources/concave_polygon_shape_3d.h"
+#include "scene/resources/3d/concave_polygon_shape_3d.h"
 
 void ShapeCast3D::_notification(int p_what) {
 	switch (p_what) {
@@ -170,8 +170,8 @@ void ShapeCast3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_shape_custom_color"), "set_debug_shape_custom_color", "get_debug_shape_custom_color");
 }
 
-Array ShapeCast3D::get_configuration_warnings() const {
-	Array warnings = Node3D::get_configuration_warnings();
+PackedStringArray ShapeCast3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node3D::get_configuration_warnings();
 
 	if (shape.is_null()) {
 		warnings.push_back(RTR("This node cannot interact with other objects unless a Shape3D is assigned."));

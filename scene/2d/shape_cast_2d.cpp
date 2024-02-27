@@ -33,7 +33,7 @@
 #include "core/config/engine.h"
 #include "scene/2d/collision_object_2d.h"
 #include "scene/2d/physics_body_2d.h"
-#include "scene/resources/circle_shape_2d.h"
+#include "scene/resources/2d/circle_shape_2d.h"
 #include "servers/physics_2d/godot_physics_server_2d.h"
 
 void ShapeCast2D::set_target_position(const Vector2 &p_point) {
@@ -402,8 +402,8 @@ Array ShapeCast2D::_get_collision_result() const {
 	return ret;
 }
 
-Array ShapeCast2D::get_configuration_warnings() const {
-	Array warnings = Node2D::get_configuration_warnings();
+PackedStringArray ShapeCast2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	if (shape.is_null()) {
 		warnings.push_back(RTR("This node cannot interact with other objects unless a Shape2D is assigned."));

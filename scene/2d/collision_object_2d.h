@@ -33,7 +33,7 @@
 
 #include "scene/2d/node_2d.h"
 #include "scene/main/viewport.h"
-#include "scene/resources/shape_2d.h"
+#include "scene/resources/2d/shape_2d.h"
 #include "servers/physics_server_2d.h"
 
 class CollisionObject2D : public Node2D {
@@ -166,7 +166,7 @@ public:
 	void set_pickable(bool p_enabled);
 	bool is_pickable() const;
 
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
 

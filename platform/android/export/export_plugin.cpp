@@ -294,7 +294,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 
 		// Check for devices updates
 		String adb = get_adb_path();
-		if (FileAccess::exists(adb)) {
+		if (ea->has_runnable_preset.is_set() && FileAccess::exists(adb)) {
 			String devices;
 			List<String> args;
 			args.push_back("devices");
@@ -379,7 +379,8 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 							} else if (p.begins_with("ro.build.version.sdk=")) {
 								d.api_level = p.get_slice("=", 1).to_int();
 							} else if (p.begins_with("ro.product.cpu.abi=")) {
-								d.description += "CPU: " + p.get_slice("=", 1).strip_edges() + "\n";
+								d.architecture = p.get_slice("=", 1).strip_edges();
+								d.description += "CPU: " + d.architecture + "\n";
 							} else if (p.begins_with("ro.product.manufacturer=")) {
 								d.description += "Manufacturer: " + p.get_slice("=", 1).strip_edges() + "\n";
 							} else if (p.begins_with("ro.board.platform=")) {
@@ -415,7 +416,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 		}
 	}
 
-	if (EDITOR_GET("export/android/shutdown_adb_on_exit")) {
+	if (ea->has_runnable_preset.is_set() && EDITOR_GET("export/android/shutdown_adb_on_exit")) {
 		String adb = get_adb_path();
 		if (!FileAccess::exists(adb)) {
 			return; //adb not configured
@@ -424,6 +425,25 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 		List<String> args;
 		args.push_back("kill-server");
 		OS::get_singleton()->execute(adb, args);
+	}
+}
+
+void EditorExportPlatformAndroid::_update_preset_status() {
+	const int preset_count = EditorExport::get_singleton()->get_export_preset_count();
+	bool has_runnable = false;
+
+	for (int i = 0; i < preset_count; i++) {
+		const Ref<EditorExportPreset> &preset = EditorExport::get_singleton()->get_export_preset(i);
+		if (preset->get_platform() == this && preset->is_runnable()) {
+			has_runnable = true;
+			break;
+		}
+	}
+
+	if (has_runnable) {
+		has_runnable_preset.set();
+	} else {
+		has_runnable_preset.clear();
 	}
 }
 #endif
@@ -806,6 +826,16 @@ bool EditorExportPlatformAndroid::_uses_vulkan() {
 	String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
 	bool uses_vulkan = (current_renderer == "forward_plus" || current_renderer == "mobile") && GLOBAL_GET("rendering/rendering_device/driver.android") == "vulkan";
 	return uses_vulkan;
+}
+
+void EditorExportPlatformAndroid::_notification(int p_what) {
+#ifndef ANDROID_ENABLED
+	if (p_what == NOTIFICATION_POSTINITIALIZE) {
+		if (EditorExport::get_singleton()) {
+			EditorExport::get_singleton()->connect_presets_runnable_updated(callable_mp(this, &EditorExportPlatformAndroid::_update_preset_status));
+		}
+	}
+#endif
 }
 
 void EditorExportPlatformAndroid::_get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions) {
@@ -1883,13 +1913,22 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 }
 
 bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
+	if (p_preset == nullptr) {
+		return true;
+	}
+
+	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
+	if (p_option == "graphics/opengl_debug" ||
+			p_option == "command_line/extra_args" ||
+			p_option == "permissions/custom_permissions") {
+		return advanced_options_enabled;
+	}
 	if (p_option == "gradle_build/gradle_build_directory" || p_option == "gradle_build/android_source_template") {
-		// @todo These are experimental options - keep them hidden for now.
-		//return (bool)p_preset->get("gradle_build/use_gradle_build");
-		return false;
-	} else if (p_option == "custom_template/debug" || p_option == "custom_template/release") {
+		return advanced_options_enabled && bool(p_preset->get("gradle_build/use_gradle_build"));
+	}
+	if (p_option == "custom_template/debug" || p_option == "custom_template/release") {
 		// The APK templates are ignored if Gradle build is enabled.
-		return !p_preset->get("gradle_build/use_gradle_build");
+		return advanced_options_enabled && !bool(p_preset->get("gradle_build/use_gradle_build"));
 	}
 	return true;
 }
@@ -1952,6 +1991,12 @@ String EditorExportPlatformAndroid::get_option_tooltip(int p_index) const {
 		s = devices[p_index].name + "\n\n" + s;
 	}
 	return s;
+}
+
+String EditorExportPlatformAndroid::get_device_architecture(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, devices.size(), "");
+	MutexLock lock(device_lock);
+	return devices[p_index].architecture;
 }
 
 Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) {
@@ -3574,6 +3619,7 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 		android_plugins_changed.set();
 #endif // DISABLE_DEPRECATED
 #ifndef ANDROID_ENABLED
+		_update_preset_status();
 		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
 #endif
 	}

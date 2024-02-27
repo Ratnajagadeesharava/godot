@@ -32,7 +32,7 @@
 #define SHAPE_CAST_3D_H
 
 #include "scene/3d/node_3d.h"
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
 class CollisionObject3D;
 
@@ -140,7 +140,7 @@ public:
 	void remove_exception(const CollisionObject3D *p_node);
 	void clear_exceptions();
 
-	virtual Array get_configuration_warnings() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 };
 
 #endif // SHAPE_CAST_3D_H

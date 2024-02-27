@@ -32,7 +32,7 @@
 
 #include "collision_object_3d.h"
 #include "core/math/geometry_2d.h"
-#include "scene/resources/convex_polygon_shape_3d.h"
+#include "scene/resources/3d/convex_polygon_shape_3d.h"
 
 void CollisionPolygon3D::_build_polygon() {
 	if (!collision_object) {
@@ -168,8 +168,8 @@ void CollisionPolygon3D::set_margin(real_t p_margin) {
 	}
 }
 
-Array CollisionPolygon3D::get_configuration_warnings() const {
-	Array warnings = Node::get_configuration_warnings();
+PackedStringArray CollisionPolygon3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject3D>(get_parent())) {
 		warnings.push_back(RTR("CollisionPolygon3D only serves to provide a collision shape to a CollisionObject3D derived node.\nPlease only use it as a child of Area3D, StaticBody3D, RigidBody3D, CharacterBody3D, etc. to give them a shape."));

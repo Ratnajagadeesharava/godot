@@ -32,7 +32,7 @@
 #define COLLISION_SHAPE_2D_H
 
 #include "scene/2d/node_2d.h"
-#include "scene/resources/shape_2d.h"
+#include "scene/resources/2d/shape_2d.h"
 
 class CollisionObject2D;
 
@@ -80,7 +80,7 @@ public:
 	void set_debug_color(const Color &p_color);
 	Color get_debug_color() const;
 
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	CollisionShape2D();
 };
