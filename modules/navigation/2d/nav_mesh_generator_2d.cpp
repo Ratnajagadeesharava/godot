@@ -35,7 +35,7 @@
 #include "core/config/project_settings.h"
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
-#include "scene/2d/physics_body_2d.h"
+#include "scene/2d/physics/static_body_2d.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/2d/tile_map.h"
 #include "scene/resources/2d/capsule_shape_2d.h"
@@ -789,7 +789,7 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 		const int rect_end_y = baking_rect.position[1] + baking_rect.size[1] + baking_rect_offset.y;
 
 		Rect64 clipper_rect = Rect64(rect_begin_x, rect_begin_y, rect_end_x, rect_end_y);
-		RectClip rect_clip = RectClip(clipper_rect);
+		RectClip64 rect_clip = RectClip64(clipper_rect);
 
 		traversable_polygon_paths = rect_clip.Execute(traversable_polygon_paths);
 		obstruction_polygon_paths = rect_clip.Execute(obstruction_polygon_paths);
@@ -821,7 +821,7 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 		const int rect_end_y = baking_rect.position[1] + baking_rect.size[1] + baking_rect_offset.y - border_size;
 
 		Rect64 clipper_rect = Rect64(rect_begin_x, rect_begin_y, rect_end_x, rect_end_y);
-		RectClip rect_clip = RectClip(clipper_rect);
+		RectClip64 rect_clip = RectClip64(clipper_rect);
 
 		path_solution = rect_clip.Execute(path_solution);
 	}

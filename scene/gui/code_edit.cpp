@@ -1824,14 +1824,14 @@ void CodeEdit::create_code_region() {
 		}
 		int to_line = get_selection_to_line(caret_idx);
 		set_line(to_line, get_line(to_line) + "\n" + code_region_end_string);
-		insert_line_at(from_line, code_region_start_string + " " + RTR("New Code Region"));
+		insert_line_at(from_line, code_region_start_string + " " + atr(ETR("New Code Region")));
 		fold_line(from_line);
 	}
 
 	// Select name of the first region to allow quick edit.
 	remove_secondary_carets();
 	set_caret_line(first_region_start);
-	int tag_length = code_region_start_string.length() + RTR("New Code Region").length() + 1;
+	int tag_length = code_region_start_string.length() + atr(ETR("New Code Region")).length() + 1;
 	set_caret_column(tag_length);
 	select(first_region_start, code_region_start_string.length() + 1, first_region_start, tag_length);
 
@@ -1861,12 +1861,18 @@ bool CodeEdit::is_line_code_region_start(int p_line) const {
 	if (code_region_start_string.is_empty()) {
 		return false;
 	}
+	if (is_in_string(p_line) != -1) {
+		return false;
+	}
 	return get_line(p_line).strip_edges().begins_with(code_region_start_string);
 }
 
 bool CodeEdit::is_line_code_region_end(int p_line) const {
 	ERR_FAIL_INDEX_V(p_line, get_line_count(), false);
 	if (code_region_start_string.is_empty()) {
+		return false;
+	}
+	if (is_in_string(p_line) != -1) {
 		return false;
 	}
 	return get_line(p_line).strip_edges().begins_with(code_region_end_string);
